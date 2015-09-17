@@ -33,7 +33,7 @@ namespace Login.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(LoginModel model, string returnUrl)
+        /*public ActionResult Login(LoginModel model, string returnUrl)
         {
             if (ModelState.IsValid && WebSecurity.Login(model.UserName, model.Password, persistCookie: model.RememberMe))
             {
@@ -42,6 +42,23 @@ namespace Login.Controllers
 
             // Si llegamos a este punto, es que se ha producido un error y volvemos a mostrar el formulario
             ModelState.AddModelError("", "El nombre de usuario o la contraseña especificados son incorrectos.");
+            return View(model);
+        }*/
+        public ActionResult Login(LoginModel model, string returnUrl)
+        {
+            if (ModelState.IsValid) //Verificar que el modelo de datos sea válido en cuanto a la definición de las propiedades
+            {
+                if (Isvalid(model.IdUsuario, model.Password))//Verificar que el email y clave exista utilizando el método privado
+                {
+                    FormsAuthentication.SetAuthCookie(model.IdUsuario, false); //crea variable de usuario con el correo del usuario
+                    //return RedirectToAction("Menu", "Menu"); //dirigir al controlador home vista Index una vez se a autenticado en el sistema
+                    return RedirectToLocal(returnUrl);
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Login data in incorrect"); //adicionar mensaje de error al model
+                }
+            }
             return View(model);
         }
 
@@ -79,8 +96,8 @@ namespace Login.Controllers
                 // Intento de registrar al usuario
                 try
                 {
-                    WebSecurity.CreateUserAndAccount(model.UserName, model.Password);
-                    WebSecurity.Login(model.UserName, model.Password);
+                    WebSecurity.CreateUserAndAccount(model.IdUsuario, model.Password);
+                    WebSecurity.Login(model.IdUsuario, model.Password);
                     return RedirectToAction("Index", "Home");
                 }
                 catch (MembershipCreateUserException e)
@@ -240,7 +257,7 @@ namespace Login.Controllers
                 string loginData = OAuthWebSecurity.SerializeProviderUserId(result.Provider, result.ProviderUserId);
                 ViewBag.ProviderDisplayName = OAuthWebSecurity.GetOAuthClientData(result.Provider).DisplayName;
                 ViewBag.ReturnUrl = returnUrl;
-                return View("ExternalLoginConfirmation", new RegisterExternalLoginModel { UserName = result.UserName, ExternalLoginData = loginData });
+                return View("ExternalLoginConfirmation", new RegisterExternalLoginModel { IdUsuario = result.UserName, ExternalLoginData = loginData });
             }
         }
 
@@ -265,15 +282,15 @@ namespace Login.Controllers
                 // Insertar un nuevo usuario en la base de datos
                 using (UsersContext db = new UsersContext())
                 {
-                    UserProfile user = db.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == model.UserName.ToLower());
+                    UserProfile user = db.UserProfiles.FirstOrDefault(u => u.NomUsuario.ToLower() == model.IdUsuario.ToLower());
                     // Comprobar si el usuario ya existe
                     if (user == null)
                     {
                         // Insertar el nombre en la tabla de perfiles
-                        db.UserProfiles.Add(new UserProfile { UserName = model.UserName });
+                        db.UserProfiles.Add(new UserProfile { NomUsuario = model.IdUsuario });
                         db.SaveChanges();
 
-                        OAuthWebSecurity.CreateOrUpdateAccount(provider, providerUserId, model.UserName);
+                        OAuthWebSecurity.CreateOrUpdateAccount(provider, providerUserId, model.IdUsuario);
                         OAuthWebSecurity.Login(provider, providerUserId, createPersistentCookie: false);
 
                         return RedirectToLocal(returnUrl);
@@ -326,6 +343,23 @@ namespace Login.Controllers
 
             ViewBag.ShowRemoveButton = externalLogins.Count > 1 || OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
             return PartialView("_RemoveExternalLoginsPartial", externalLogins);
+        }
+
+        private bool Isvalid(string IdUsuario, string password)
+        {
+            bool Isvalid = false;
+            using (var db = new pruebasvsEntities())
+            {
+                var user = db.catusuarios.FirstOrDefault(u => u.IdUsuario == IdUsuario); //consultar el primer registro con los el email del usuario
+                if (user != null)
+                {
+                    if (user.PassUsuario == password) //Verificar password del usuario
+                    {
+                        Isvalid = true;
+                    }
+                }
+            }
+            return Isvalid;
         }
 
         #region Aplicaciones auxiliares

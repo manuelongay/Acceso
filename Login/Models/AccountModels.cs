@@ -11,27 +11,27 @@ namespace Login.Models
     public class UsersContext : DbContext
     {
         public UsersContext()
-            : base("DefaultConnection")
+            : base("pruebasvsEntities")
         {
         }
 
         public DbSet<UserProfile> UserProfiles { get; set; }
     }
 
-    [Table("UserProfile")]
+    [Table("CatUsuario")]
     public class UserProfile
     {
         [Key]
         [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
-        public int UserId { get; set; }
-        public string UserName { get; set; }
+        public int IdUsuario { get; set; }
+        public string NomUsuario { get; set; }
     }
 
     public class RegisterExternalLoginModel
     {
         [Required]
         [Display(Name = "Nombre de usuario")]
-        public string UserName { get; set; }
+        public string IdUsuario { get; set; }
 
         public string ExternalLoginData { get; set; }
     }
@@ -59,7 +59,7 @@ namespace Login.Models
     {
         [Required]
         [Display(Name = "Nombre de usuario")]
-        public string UserName { get; set; }
+        public string IdUsuario { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
@@ -74,7 +74,7 @@ namespace Login.Models
     {
         [Required]
         [Display(Name = "Nombre de usuario")]
-        public string UserName { get; set; }
+        public string IdUsuario { get; set; }
 
         [Required]
         [StringLength(100, ErrorMessage = "El número de caracteres de {0} debe ser al menos {2}.", MinimumLength = 6)]
