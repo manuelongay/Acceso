@@ -1,0 +1,16 @@
+﻿@if (Request.IsAuthenticated)
+{
+    @*<ul id="mh">*@
+        <li><a href="">Modulo 1</a></li>
+        <li><a href="">Modulo 2</a></li>
+        <li>
+            <a href="">General</a>
+            <ul>
+                @*<li><a href="">Catalogo Usuarios</a></li>*@
+                <li>@Html.ActionLink("Catalogo de Usuarios", "index", "usuario")</li>
+                <li>@Html.ActionLink("Listado Empresa", "index", "empresa")</li>
+                @*<li>@Html.ActionLink("Listado UsrxEmpresa", "index", "empresa")</li>*@
+            </ul>
+        </li>
+    @*</ul>*@
+}
